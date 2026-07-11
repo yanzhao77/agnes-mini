@@ -1,0 +1,6 @@
+{
+  "name": "agnes-mini",
+  "version": "1.0.0",
+  "description": "Agnes Mini - Lightweight Python SDK",
+  "tools": ["agnes_run", "get_available_tools"]
+}
