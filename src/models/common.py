@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -77,9 +77,9 @@ class Usage(BaseModel):
 class ErrorDetail(BaseModel):
     """Structured error detail returned by the API."""
 
-    code: Optional[str] = None
+    code: str | None = None
     message: str = ""
-    type: Optional[str] = None
+    type: str | None = None
 
 
 class ToolCall(BaseModel):
@@ -109,4 +109,4 @@ class FunctionToolDef(BaseModel):
 
     name: str
     description: str = ""
-    parameters: dict = Field(default_factory=dict)
+    parameters: dict[str, Any] = Field(default_factory=dict)

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -14,20 +14,20 @@ class VideoRequest(BaseModel):
 
     model: str = "agnes-video-v2.0"
     prompt: str
-    duration: Optional[VideoDuration] = None
-    size: Optional[str] = None
-    aspect_ratio: Optional[AspectRatio] = None
-    image_url: Optional[str] = None
-    extra_body: Optional[Dict[str, Any]] = None
+    duration: VideoDuration | None = None
+    size: str | None = None
+    aspect_ratio: AspectRatio | None = None
+    image_url: str | None = None
+    extra_body: dict[str, Any] | None = None
 
 
 class VideoTaskResponse(BaseModel):
     """Response from the video creation API."""
 
     task_id: str = ""
-    video_id: Optional[str] = None
+    video_id: str | None = None
     status: VideoStatus = VideoStatus.PENDING
-    message: Optional[str] = None
+    message: str | None = None
 
 
 class VideoQueryResponse(BaseModel):
@@ -36,19 +36,19 @@ class VideoQueryResponse(BaseModel):
     id: str = ""
     task_id: str = ""
     status: VideoStatus = VideoStatus.PENDING
-    video_url: Optional[str] = None
-    video_id: Optional[str] = None
+    video_url: str | None = None
+    video_id: str | None = None
     progress: int = 0
-    error: Optional[str] = None
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    error: str | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
 
 
 class VideoResult(BaseModel):
     """Final result of a video generation operation."""
 
     video_url: str = ""
-    local_path: Optional[str] = None
+    local_path: str | None = None
     task_id: str = ""
     model: str = ""
 

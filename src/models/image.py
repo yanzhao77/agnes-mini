@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
-from src.models.common import AspectRatio, ErrorDetail, ImageSize
+from src.models.common import AspectRatio, ImageSize
 
 
 class ImageRequest(BaseModel):
@@ -14,33 +14,33 @@ class ImageRequest(BaseModel):
 
     model: str = "agnes-image-2.1-flash"
     prompt: str
-    size: Optional[ImageSize] = None
-    aspect_ratio: Optional[AspectRatio] = None
+    size: ImageSize | None = None
+    aspect_ratio: AspectRatio | None = None
     n: int = 1
-    extra_body: Optional[Dict[str, Any]] = None
+    extra_body: dict[str, Any] | None = None
 
 
 class ImageData(BaseModel):
     """Image data returned by the API."""
 
-    url: Optional[str] = None
-    b64_json: Optional[str] = None
-    revised_prompt: Optional[str] = None
+    url: str | None = None
+    b64_json: str | None = None
+    revised_prompt: str | None = None
 
 
 class ImageResponse(BaseModel):
     """Response from the image generation API."""
 
     created: int = 0
-    data: List[ImageData] = Field(default_factory=list)
+    data: list[ImageData] = Field(default_factory=list)
 
 
 class ImageGenerationResult(BaseModel):
     """Result of an image generation operation with metadata."""
 
-    urls: List[str] = Field(default_factory=list)
-    local_paths: List[str] = Field(default_factory=list)
-    revised_prompt: Optional[str] = None
+    urls: list[str] = Field(default_factory=list)
+    local_paths: list[str] = Field(default_factory=list)
+    revised_prompt: str | None = None
     model: str = ""
     created: int = 0
 
@@ -51,9 +51,9 @@ class ImageToImageRequest(BaseModel):
     model: str = "agnes-image-2.1-flash"
     prompt: str
     image: str  # URL or base64 data URI
-    strength: Optional[float] = None
-    size: Optional[ImageSize] = None
-    extra_body: Optional[Dict[str, Any]] = None
+    strength: float | None = None
+    size: ImageSize | None = None
+    extra_body: dict[str, Any] | None = None
 
 
 class MultiImageCompositionRequest(BaseModel):
@@ -61,7 +61,7 @@ class MultiImageCompositionRequest(BaseModel):
 
     model: str = "agnes-image-2.1-flash"
     prompt: str
-    images: List[str]  # URLs or base64 data URIs
+    images: list[str]  # URLs or base64 data URIs
     mode: str = "composition"
-    size: Optional[ImageSize] = None
-    extra_body: Optional[Dict[str, Any]] = None
+    size: ImageSize | None = None
+    extra_body: dict[str, Any] | None = None

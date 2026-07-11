@@ -1,16 +1,14 @@
 """Data models for chat/text interactions with Agnes AI."""
 
 from __future__ import annotations
+from typing import Any
 
-from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
 from src.models.common import (
-    ErrorDetail,
     FinishReason,
     FunctionTool,
-    Role,
     ToolCall,
     Usage,
 )
@@ -20,39 +18,39 @@ class ImageUrlContent(BaseModel):
     """Image URL content for multimodal messages."""
 
     url: str
-    detail: Optional[str] = None
+    detail: str | None = None
 
 
 class MessageContent(BaseModel):
     """A single content item in a message (text or image_url)."""
 
     type: str = "text"
-    text: Optional[str] = None
-    image_url: Optional[ImageUrlContent] = None
+    text: str | None = None
+    image_url: ImageUrlContent | None = None
 
 
 class ChatMessage(BaseModel):
     """A single message in a chat conversation."""
 
     role: str = "user"
-    content: Optional[Union[str, List[MessageContent]]] = None
-    tool_calls: Optional[List[ToolCall]] = None
-    tool_call_id: Optional[str] = None
-    name: Optional[str] = None
+    content: str | list[MessageContent] | None = None
+    tool_calls: list[ToolCall] | None = None
+    tool_call_id: str | None = None
+    name: str | None = None
 
 
 class ChatRequest(BaseModel):
     """Request payload for the chat completions API."""
 
     model: str = "agnes-2.0-flash"
-    messages: List[ChatMessage]
-    temperature: Optional[float] = None
-    max_tokens: Optional[int] = None
-    top_p: Optional[float] = None
+    messages: list[ChatMessage]
+    temperature: float | None = None
+    max_tokens: int | None = None
+    top_p: float | None = None
     stream: bool = False
-    tools: Optional[List[FunctionTool]] = None
-    tool_choice: Optional[Union[str, Dict[str, Any]]] = None
-    extra_body: Optional[Dict[str, Any]] = None
+    tools: list[FunctionTool] | None = None
+    tool_choice: str | dict[str, Any] | None = None
+    extra_body: dict[str, Any] | None = None
 
 
 class ChatChoice(BaseModel):
@@ -60,7 +58,7 @@ class ChatChoice(BaseModel):
 
     index: int = 0
     message: ChatMessage = Field(default_factory=ChatMessage)
-    finish_reason: Optional[FinishReason] = None
+    finish_reason: FinishReason | None = None
 
 
 class ChatResponse(BaseModel):
@@ -70,16 +68,16 @@ class ChatResponse(BaseModel):
     object: str = "chat.completion"
     created: int = 0
     model: str = ""
-    choices: List[ChatChoice] = Field(default_factory=list)
-    usage: Optional[Usage] = None
+    choices: list[ChatChoice] = Field(default_factory=list)
+    usage: Usage | None = None
 
 
 class DeltaMessage(BaseModel):
     """Delta content in a streaming response."""
 
-    role: Optional[str] = None
-    content: Optional[str] = None
-    tool_calls: Optional[List[ToolCall]] = None
+    role: str | None = None
+    content: str | None = None
+    tool_calls: list[ToolCall] | None = None
 
 
 class StreamChoice(BaseModel):
@@ -87,7 +85,7 @@ class StreamChoice(BaseModel):
 
     index: int = 0
     delta: DeltaMessage = Field(default_factory=DeltaMessage)
-    finish_reason: Optional[FinishReason] = None
+    finish_reason: FinishReason | None = None
 
 
 class ChatStreamChunk(BaseModel):
@@ -97,13 +95,13 @@ class ChatStreamChunk(BaseModel):
     object: str = "chat.completion.chunk"
     created: int = 0
     model: str = ""
-    choices: List[StreamChoice] = Field(default_factory=list)
+    choices: list[StreamChoice] = Field(default_factory=list)
 
 
 class ChatHistory(BaseModel):
     """Accumulated conversation history for an agent."""
 
-    messages: List[ChatMessage] = Field(default_factory=list)
+    messages: list[ChatMessage] = Field(default_factory=list)
     max_turns: int = 50
 
     def add_message(self, message: ChatMessage) -> None:
@@ -115,7 +113,7 @@ class ChatHistory(BaseModel):
             else:
                 self.messages = self.messages[-self.max_turns:]
 
-    def to_api_messages(self) -> List[dict]:
+    def to_api_messages(self) -> list[dict[str, Any]]:
         """Convert history to API-compatible message list."""
         return [m.model_dump(exclude_none=True) for m in self.messages]
 

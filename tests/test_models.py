@@ -1,7 +1,7 @@
 """Tests for all data models."""
 
-from pydantic import ValidationError
 import pytest
+from pydantic import ValidationError
 
 from src.models.chat import (
     ChatHistory,
@@ -38,7 +38,6 @@ from src.models.video import (
     VideoTaskResponse,
 )
 
-
 # --- Enum Tests ---
 
 @pytest.mark.parametrize("role", ["system", "user", "assistant", "tool"])
@@ -72,7 +71,9 @@ def test_finish_reason_enum(reason):
 
 
 def test_function_tool_creation():
-    tool = FunctionTool(function={"name": "test_fn", "description": "A test", "parameters": {"type": "object"}})
+    tool = FunctionTool(
+        function={"name": "test_fn", "description": "A test", "parameters": {"type": "object"}}
+    )
     assert tool.function.name == "test_fn"
 
 

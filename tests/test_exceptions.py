@@ -69,7 +69,7 @@ def test_exception_can_be_raised_and_caught():
     except AgnesMiniError as e:
         assert str(e) == "Rate limited"
     except Exception:
-        assert False, "Should have been caught as AgnesMiniError"
+        raise AssertionError("Should have been caught as AgnesMiniError") from None
 
 
 def test_exception_inheritance_chain():
