@@ -172,21 +172,33 @@ def create_provider(provider_type: str, settings: Settings | None = None) -> Bas
         settings: Optional Settings instance.
 
     Returns:
-        An appropriate provider instance.
+        An appropriate provider instance (real if API key available, mock otherwise).
 
     Raises:
         ProviderNotFoundError: If provider_type is unknown.
     """
     from src.exceptions import ProviderNotFoundError
+    resolved = settings or get_settings()
 
-    if provider_type == "chat":
-        from src.providers.mock_chat import MockChatProvider
-        return MockChatProvider(settings)
-    elif provider_type == "image":
-        from src.providers.mock_image import MockImageProvider
-        return MockImageProvider(settings)
-    elif provider_type == "video":
-        from src.providers.mock_video import MockVideoProvider
-        return MockVideoProvider(settings)
+    if resolved.api_key:
+        if provider_type == "chat":
+            from src.providers.chat import ChatProvider
+            return ChatProvider(resolved)
+        elif provider_type == "image":
+            from src.providers.image import ImageProvider
+            return ImageProvider(resolved)
+        elif provider_type == "video":
+            from src.providers.video import VideoProvider
+            return VideoProvider(resolved)
     else:
-        raise ProviderNotFoundError(f"Unknown provider type: {provider_type}")
+        if provider_type == "chat":
+            from src.providers.mock_chat import MockChatProvider
+            return MockChatProvider(resolved)
+        elif provider_type == "image":
+            from src.providers.mock_image import MockImageProvider
+            return MockImageProvider(resolved)
+        elif provider_type == "video":
+            from src.providers.mock_video import MockVideoProvider
+            return MockVideoProvider(resolved)
+
+    raise ProviderNotFoundError(f"Unknown provider type: {provider_type}")
