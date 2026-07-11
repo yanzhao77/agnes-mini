@@ -1,6 +1,5 @@
 """Tool definitions for agent orchestration."""
 from __future__ import annotations
-from typing import Any, Dict
 
 from src.models.common import FunctionTool
 
@@ -51,7 +50,7 @@ def get_tool_definitions() -> list[FunctionTool]:
     ]
 
 
-TOOL_MAP: Dict[str, str] = {
+TOOL_MAP: dict[str, str] = {
     "generate_image": "image",
     "generate_video": "video",
     "chat": "chat",

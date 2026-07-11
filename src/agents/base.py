@@ -1,7 +1,9 @@
 """Abstract base class for all agents."""
 from __future__ import annotations
+
 from abc import ABC
-from typing import Any, ClassVar
+from typing import ClassVar
+
 from src.config import Settings, get_settings
 from src.logger import get_logger
 

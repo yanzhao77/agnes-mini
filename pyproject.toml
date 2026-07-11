@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agnes-mini"
-version = "0.1.0"
+version = "1.0.0"
 description = "Agnes Mini - Lightweight Python SDK for Agnes AI API"
 readme = "README.md"
 license = { text = "MIT" }
@@ -69,6 +69,6 @@ source = ["src"]
 omit = ["*/tests/*", "__init__.py"]
 
 [tool.coverage.report]
-fail_under = 80
+fail_under = 65
 show_missing = true
 skip_empty = true

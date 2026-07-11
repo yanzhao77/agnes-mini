@@ -1,9 +1,11 @@
 """Image agent wrapping ImageProvider with local caching."""
 from __future__ import annotations
+
 from typing import Any
+
 from src.agents.base import BaseAgent
-from src.models.image import ImageGenerationResult, ImageRequest
 from src.models.common import ImageSize
+from src.models.image import ImageGenerationResult, ImageRequest
 from src.providers.image import ImageProvider
 from src.providers.mock_image import MockImageProvider
 

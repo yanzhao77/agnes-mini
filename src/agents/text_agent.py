@@ -1,10 +1,16 @@
 """Text agent wrapping ChatProvider with conversation history."""
 from __future__ import annotations
-from typing import Any, AsyncGenerator
+
+from collections.abc import AsyncGenerator
+from typing import Any
+
 from src.agents.base import BaseAgent
 from src.models.chat import (
-    ChatHistory, ChatMessage, ChatRequest,
-    ChatResponse, ChatStreamChunk,
+    ChatHistory,
+    ChatMessage,
+    ChatRequest,
+    ChatResponse,
+    ChatStreamChunk,
 )
 from src.providers.chat import ChatProvider
 from src.providers.mock_chat import MockChatProvider

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
 import asyncio
+from typing import Any
 
 from src.exceptions import VideoPollingError, VideoTimeoutError
 from src.models.common import VideoStatus

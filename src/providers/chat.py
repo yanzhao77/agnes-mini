@@ -1,9 +1,17 @@
 """Real ChatProvider implementation for Agnes AI chat completions API."""
 from __future__ import annotations
-from typing import Any, AsyncGenerator, Dict, List, Optional
+
+from collections.abc import AsyncGenerator
+from typing import Any
+
 from src.models.chat import (
-    ChatChoice, ChatMessage, ChatRequest, ChatResponse,
-    ChatStreamChunk, DeltaMessage, StreamChoice,
+    ChatChoice,
+    ChatMessage,
+    ChatRequest,
+    ChatResponse,
+    ChatStreamChunk,
+    DeltaMessage,
+    StreamChoice,
 )
 from src.models.common import FinishReason, Usage
 from src.providers.base import BaseProvider
@@ -47,8 +55,8 @@ class ChatProvider(BaseProvider):
         request.extra_body["thinking"] = True
         return await self.chat(request)
 
-    def _build_chat_payload(self, request: ChatRequest) -> Dict[str, Any]:
-        payload: Dict[str, Any] = {
+    def _build_chat_payload(self, request: ChatRequest) -> dict[str, Any]:
+        payload: dict[str, Any] = {
             "model": request.model,
             "messages": [m.model_dump(exclude_none=True) for m in request.messages],
         }
@@ -68,7 +76,7 @@ class ChatProvider(BaseProvider):
             payload.update(request.extra_body)
         return payload
 
-    def _parse_chat_response(self, data: Dict[str, Any]) -> ChatResponse:
+    def _parse_chat_response(self, data: dict[str, Any]) -> ChatResponse:
         choices = []
         for c in data.get("choices", []):
             msg_data = c.get("message", {})
@@ -89,7 +97,7 @@ class ChatProvider(BaseProvider):
             usage=Usage(**usage_data) if usage_data else None,
         )
 
-    def _parse_stream_chunk(self, data_str: str) -> Optional[ChatStreamChunk]:
+    def _parse_stream_chunk(self, data_str: str) -> ChatStreamChunk | None:
         import json as _json
         try:
             data = _json.loads(data_str)

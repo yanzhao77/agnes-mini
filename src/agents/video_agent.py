@@ -1,10 +1,12 @@
 """Video agent wrapping VideoProvider with polling lifecycle."""
 from __future__ import annotations
+
 from typing import Any
+
 from src.agents.base import BaseAgent
 from src.models.video import VideoPollConfig, VideoRequest, VideoResult
-from src.providers.video import VideoProvider
 from src.providers.mock_video import MockVideoProvider
+from src.providers.video import VideoProvider
 
 
 class VideoAgent(BaseAgent):

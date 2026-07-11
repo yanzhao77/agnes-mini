@@ -1,9 +1,11 @@
 """Tests for VideoAgent."""
 from __future__ import annotations
+
 import pytest
+
 from src.agents.video_agent import VideoAgent
 from src.config import Settings
-from src.models.video import VideoPollConfig, VideoRequest
+from src.models.video import VideoRequest
 
 
 @pytest.fixture

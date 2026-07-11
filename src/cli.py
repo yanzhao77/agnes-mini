@@ -1,11 +1,13 @@
 """CLI commands for Agnes Mini."""
 from __future__ import annotations
+
 import asyncio
-from typing import Optional
+
 import typer
+
+from src.agents.image_agent import ImageAgent
 from src.agents.orchestrator import OrchestratorAgent
 from src.agents.text_agent import TextAgent
-from src.agents.image_agent import ImageAgent
 from src.agents.video_agent import VideoAgent
 
 app = typer.Typer(name="agnes", help="Agnes Mini SDK")
@@ -14,7 +16,7 @@ app = typer.Typer(name="agnes", help="Agnes Mini SDK")
 @app.command()
 def chat(
     message: str = typer.Argument(..., help="Your message"),
-    system: Optional[str] = typer.Option(None, "--system", "-s"),
+    system: str | None = typer.Option(None, "--system", "-s"),
 ):
     async def _run():
         agent = TextAgent()
@@ -27,7 +29,7 @@ def chat(
 @app.command()
 def image(
     prompt: str = typer.Argument(..., help="Image prompt"),
-    output: Optional[str] = typer.Option(None, "--output", "-o"),
+    output: str | None = typer.Option(None, "--output", "-o"),
 ):
     async def _run():
         agent = ImageAgent()

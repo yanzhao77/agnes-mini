@@ -1,12 +1,12 @@
 """Orchestrator agent that routes user requests to the appropriate agent."""
 from __future__ import annotations
+
 from typing import Any
+
 from src.agents.base import BaseAgent
-from src.agents.text_agent import TextAgent
 from src.agents.image_agent import ImageAgent
+from src.agents.text_agent import TextAgent
 from src.agents.video_agent import VideoAgent
-from src.agents.tools import get_tool_definitions, TOOL_MAP
-from src.config import get_settings
 from src.logger import get_logger
 
 logger = get_logger(__name__)
@@ -88,6 +88,6 @@ class OrchestratorAgent(BaseAgent):
     async def _handle_video(self, user_input: str) -> AgentResult:
         result = await self.video_agent.generate(user_input)
         return AgentResult(
-            text=f"Generated video.",
+            text="Generated video.",
             video_urls=[result.video_url] if result.video_url else [],
         )

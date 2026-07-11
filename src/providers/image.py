@@ -1,7 +1,16 @@
 """Real ImageProvider for Agnes AI image generation API."""
 from __future__ import annotations
-from typing import Any, Dict, Optional
-from src.models.image import ImageData, ImageGenerationResult, ImageRequest, ImageResponse, ImageToImageRequest, MultiImageCompositionRequest
+
+from typing import Any
+
+from src.models.image import (
+    ImageData,
+    ImageGenerationResult,
+    ImageRequest,
+    ImageResponse,
+    ImageToImageRequest,
+    MultiImageCompositionRequest,
+)
 from src.providers.base import BaseProvider
 
 
@@ -29,12 +38,12 @@ class ImageProvider(BaseProvider):
         )
 
     async def image_to_image(self, request: ImageToImageRequest) -> ImageResponse:
-        payload: Dict[str, Any] = {"model": request.model, "prompt": request.prompt}
+        payload: dict[str, Any] = {"model": request.model, "prompt": request.prompt}
         if request.size:
             payload["size"] = request.size.value
         if request.strength is not None:
             payload["strength"] = request.strength
-        extra: Dict[str, Any] = dict(request.extra_body or {})
+        extra: dict[str, Any] = dict(request.extra_body or {})
         extra["image"] = request.image
         payload["extra_body"] = extra
         response = await self._request_with_retry("POST", "/v1/images/generations", json_data=payload)
@@ -45,10 +54,10 @@ class ImageProvider(BaseProvider):
         )
 
     async def multi_image_composition(self, request: MultiImageCompositionRequest) -> ImageResponse:
-        payload: Dict[str, Any] = {"model": request.model, "prompt": request.prompt}
+        payload: dict[str, Any] = {"model": request.model, "prompt": request.prompt}
         if request.size:
             payload["size"] = request.size.value
-        extra: Dict[str, Any] = dict(request.extra_body or {})
+        extra: dict[str, Any] = dict(request.extra_body or {})
         extra["images"] = request.images
         extra["mode"] = request.mode
         payload["extra_body"] = extra
@@ -63,12 +72,11 @@ class ImageProvider(BaseProvider):
         client = await self._get_client()
         response = await client.get(url)
         response.raise_for_status()
-        import aiofiles  # not available, use sync fallback
         with open(output_path, 'wb') as f:
             f.write(response.content)
         return output_path
 
-    async def generate_and_save(self, request: ImageRequest, output_dir: Optional[str] = None) -> ImageGenerationResult:
+    async def generate_and_save(self, request: ImageRequest, output_dir: str | None = None) -> ImageGenerationResult:
         result = await self.text_to_image_result(request)
         import os
         out_dir = output_dir or "./output"
@@ -81,8 +89,8 @@ class ImageProvider(BaseProvider):
         result.local_paths = paths
         return result
 
-    def _build_image_payload(self, request: ImageRequest) -> Dict[str, Any]:
-        payload: Dict[str, Any] = {"model": request.model, "prompt": request.prompt, "n": request.n}
+    def _build_image_payload(self, request: ImageRequest) -> dict[str, Any]:
+        payload: dict[str, Any] = {"model": request.model, "prompt": request.prompt, "n": request.n}
         if request.size:
             payload["size"] = request.size.value
         if request.aspect_ratio:

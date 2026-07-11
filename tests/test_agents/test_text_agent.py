@@ -1,6 +1,8 @@
 """Tests for TextAgent."""
 from __future__ import annotations
+
 import pytest
+
 from src.agents.text_agent import TextAgent
 from src.config import Settings
 

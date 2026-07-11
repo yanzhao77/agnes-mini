@@ -1,6 +1,7 @@
 """Codex Skill entry point for Agnes Mini."""
 from __future__ import annotations
-from src.agents.orchestrator import OrchestratorAgent, AgentResult
+
+from src.agents.orchestrator import AgentResult, OrchestratorAgent
 
 
 async def agnes_run(prompt: str) -> AgentResult:

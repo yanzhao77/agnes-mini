@@ -1,10 +1,18 @@
 """Real VideoProvider for Agnes AI video generation API."""
 from __future__ import annotations
+
 import asyncio
-from typing import Any, Dict, Optional
+from typing import Any
+
 from src.exceptions import VideoCreationError, VideoPollingError, VideoTimeoutError
-from src.models.video import VideoPollConfig, VideoQueryResponse, VideoRequest, VideoResult, VideoTaskResponse
 from src.models.common import VideoStatus
+from src.models.video import (
+    VideoPollConfig,
+    VideoQueryResponse,
+    VideoRequest,
+    VideoResult,
+    VideoTaskResponse,
+)
 from src.providers.base import BaseProvider
 
 
@@ -14,7 +22,7 @@ class VideoProvider(BaseProvider):
     DEFAULT_MODEL = "agnes-video-v2.0"
 
     async def create_task(self, request: VideoRequest) -> VideoTaskResponse:
-        payload: Dict[str, Any] = {"model": request.model, "prompt": request.prompt}
+        payload: dict[str, Any] = {"model": request.model, "prompt": request.prompt}
         if request.duration:
             payload["duration"] = request.duration.value
         if request.size:
@@ -53,7 +61,7 @@ class VideoProvider(BaseProvider):
             error=data.get("error"),
         )
 
-    async def poll_task(self, task_id: str, config: Optional[VideoPollConfig] = None) -> VideoResult:
+    async def poll_task(self, task_id: str, config: VideoPollConfig | None = None) -> VideoResult:
         poll_config = config or VideoPollConfig()
         elapsed = 0
         while elapsed < poll_config.timeout:

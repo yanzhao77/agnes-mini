@@ -1,6 +1,8 @@
 """Tests for ImageAgent."""
 from __future__ import annotations
+
 import pytest
+
 from src.agents.image_agent import ImageAgent
 from src.config import Settings
 
