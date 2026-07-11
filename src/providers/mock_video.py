@@ -57,13 +57,8 @@ class MockVideoProvider(BaseProvider):
             )
 
         if task["status"] == VideoStatus.PENDING:
-            task["status"] = VideoStatus.PROCESSING
-            task["progress"] = 10
-        elif task["status"] == VideoStatus.PROCESSING:
-            if task["progress"] >= 100:
-                task["status"] = VideoStatus.COMPLETED
-            else:
-                task["progress"] += 30
+            task["status"] = VideoStatus.COMPLETED
+            task["progress"] = 100
         elif task["status"] == VideoStatus.COMPLETED:
             pass
 
