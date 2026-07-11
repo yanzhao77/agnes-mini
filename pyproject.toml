@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agnes-mini"
+version = "0.1.0"
+description = "Agnes Mini - Lightweight Python SDK for Agnes AI API"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Agnes AI Team", email = "dev@agnes.ai" },
+]
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.10",
+    "pydantic-settings>=2.6",
+    "httpx>=0.28",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0",
+    "ruff>=0.8",
+    "mypy>=1.13",
+]
+cli = [
+    "typer>=0.15",
+]
+
+[project.scripts]
+agnes = "src.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+ignore_missing_imports = true
+exclude = [
+    "tests/",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-v --strict-markers"
+markers = [
+    "integration: marks tests that require real API key",
+    "e2e: marks end-to-end tests",
+    "slow: marks tests that take more than 30 seconds",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*", "__init__.py"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_empty = true

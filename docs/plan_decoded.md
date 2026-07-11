@@ -1,0 +1,961 @@
+﻿# Agnes Mini — 技术开发计划文档
+
+> **Phase 1~5 全周期实施计划**
+>
+> 基于技术开发文档 v0.2 制定的细化开发计划，包含每日任务排期、
+> 文件创建顺序、验收标准、风险评估与回退方案。
+
+**文档状态**: v1.0 — 实施基线
+**计划周期**: 5.5 周（27 个工作日）
+**项目名称**: agnes-mini
+**关联文档**: 技术开发文档.md
+
+---
+
+## 1. 项目总览
+
+### 1.1 阶段总表
+
+| 阶段 | 时间 | 聚焦 | 源文件数 | 测试数 | 交付物 |
+|------|------|------|---------|--------|--------|
+| Phase 1 | 第 1 周 | 基础设施 | 15 | 18 | 可运行的框架 + Mock 全绿 |
+| Phase 2 | 第 2 周 | API 集成 | 6 | 18 | 三个真实 Provider |
+| Phase 3 | 第 3 周 | Agent 层 | 8 | 24 | 三层 Agent + 编排器 |
+| Phase 3.5 | 第 3.5 周 | 内部工具 | 11 | 0 | agnes-dev/review/test Skills |
+| Phase 4 | 第 3.5-4 周 | 用户接口 | 6 | 6 | CLI + Skill + 示例 |
+| Phase 5 | 第 5-5.5 周 | 文档发布 | 6 | 20 | 开源仓库就绪 |
+
+### 1.2 前置条件
+
+- [ ] Python 3.10+ 已安装（推荐 3.11 或 3.12）
+- [ ] Git 已安装并配置
+- [ ] Agnes AI API Key 已获取（非必须，Mock 模式可无 Key 开发）
+- [ ] uv 或 poetry 已安装（依赖管理用）
+- [ ] VS Code 或 PyCharm 已安装
+- [ ] 可选: ruff 扩展、Python 类型检查器
+
+### 1.3 技术选型确认
+
+| 项目 | 选择 | 原因 |
+|------|------|------|
+| 依赖管理 | uv >= 0.5 | 比 poetry 快 10-100 倍，兼容 PEP 723 |
+| 包构建 | setuptools (pyproject.toml) | 最广泛兼容，无需额外工具 |
+| 异步 HTTP | httpx >= 0.28 | 支持 asyncio，API 设计优秀 |
+| 数据模型 | Pydantic v2 >= 2.10 | 类型安全，序列化/校验一体 |
+| 测试框架 | pytest >= 8.0 + pytest-asyncio | 行业标准 |
+| 代码规范 | ruff >= 0.8 | 极速，替代 flake8/isort/black |
+| 类型检查 | mypy >= 1.13 | 最成熟的 Python 类型检查器 |
+| CLI | typer >= 0.15 | 基于 click，类型注解驱动 |
+
+---
+
+## 2. 文件创建顺序
+
+所有源文件的创建顺序遵循**依赖关系图**（见技术开发文档第 9 节），确保每次
+写完一个文件后，它的所有依赖都已就绪。
+
+### 2.1 分层创建顺序
+
+```
+第一层（零依赖）:
+  1. src/exceptions.py
+  2. src/models/common.py
+  3. src/models/chat.py
+  4. src/models/image.py
+  5. src/models/video.py
+  6. src/config.py
+
+第二层（依赖 config + models）:
+  7. src/logger.py
+  8. src/providers/base.py
+
+第三层（依赖 base）:
+  9. src/providers/mock_chat.py
+  10. src/providers/mock_image.py
+  11. src/providers/mock_video.py
+
+第四层（依赖 base + models）:
+  12. src/providers/chat.py
+  13. src/providers/image.py
+  14. src/providers/video.py
+
+第五层（依赖 providers）:
+  15. src/agents/base.py
+  16. src/agents/text_agent.py
+  17. src/agents/image_agent.py
+  18. src/agents/video_agent.py
+  19. src/agents/tools.py
+  20. src/agents/orchestrator.py
+
+第六层（依赖 agents）:
+  21. src/cli.py
+  22. src/skill.py
+  23. src/__init__.py
+  24. src/__main__.py
+
+并行层（任何时候）:
+  25. tests/conftest.py
+  26. tests/test_exceptions.py
+  27. tests/test_config.py
+  28. tests/test_models.py
+  29. tests/test_providers/*.py
+  30. tests/test_agents/*.py
+  31. .env.example
+  32. .gitignore
+  33. pyproject.toml
+  34. SKILL.md
+  35. skill.json
+  36. examples/*.py
+  37. docs/*.md
+  38. README.md
+```
+
+---
+
+## 3. 每日任务排期
+
+### Phase 1: 基础设施（第 1 周 | 5 天）
+
+**目标**: 搭建完整的工程骨架，所有基础模块可运行，Mock 测试全部通过。
+
+#### 第 1 天 — 工程初始化
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 初始化项目目录结构 | 全部目录 | 15 min | 无 |
+| 编写 pyproject.toml | pyproject.toml | 30 min | 无 |
+| 编写 .gitignore | .gitignore | 15 min | 无 |
+| 编写 .env.example | .env.example | 10 min | 无 |
+| 编写 LICENSE (MIT) | LICENSE | 5 min | 无 |
+| 安装开发依赖 | — | 15 min | pyproject.toml |
+| 配置 ruff / mypy | pyproject.toml | 15 min | 无 |
+| 初始化 Git 仓库 | — | 5 min | .gitignore + .gitignore + 全部上方 |
+| 初次提交 | — | 5 min | Git init |
+| **小计** | **7 个文件** | **~2 h** | |
+
+
+**每日结束检查**:
+- [ ] 当日所有任务已完成
+- [ ] pytest 测试通过（如适用）
+- [ ] ruff check + mypy 通过（如适用）
+- [ ] 代码已提交
+**验收标准**:
+- [ ] `pip install -e ".[dev,cli]"` 成功
+- [ ] `ruff check src/` 通过（此时 src 基本为空）
+- [ ] `git log` 显示首次提交
+- [ ] `.env.example` 包含全部配置项
+
+#### 第 2 天 — 异常体系 + 公共模型
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 编写异常基类和所有子类 | src/exceptions.py | 45 min | 无 |
+| 编写公共枚举和基类模型 | src/models/common.py | 30 min | exceptions |
+| 编写模型 __init__.py | src/models/__init__.py | 10 min | 全部 models |
+| 编写聊天/文本模型 | src/models/chat.py | 40 min | common |
+| 编写测试: 异常 | tests/test_exceptions.py | 30 min | exceptions |
+| 编写测试: 模型 | tests/test_models.py | 30 min | models |
+| **小计** | **6 个文件** | **~3 h** | |
+
+
+**每日结束检查**:
+- [ ] 当日所有任务已完成
+- [ ] pytest 测试通过（如适用）
+- [ ] ruff check + mypy 通过（如适用）
+- [ ] 代码已提交
+**验收标准**:
+- [ ] `pytest tests/test_exceptions.py -v` 全部通过（6 个）
+- [ ] `pytest tests/test_models.py -v` 全部通过（12 个）
+- [ ] `ruff check src/` 无错误
+- [ ] 所有异常继承自 AgnesMiniError
+- [ ] ChatRequest / ImageRequest / VideoRequest 均可构造
+
+#### 第 3 天 — 配置管理 + 日志 + Provider 基类
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 编写配置管理 | src/config.py | 60 min | 无 |
+| 编写日志模块 | src/logger.py | 30 min | config |
+| 编写 Provider 抽象基类 | src/providers/base.py | 60 min | config, exceptions, logger |
+| 编写测试: 配置 | tests/test_config.py | 30 min | config |
+| conftest 公共 fixtures | tests/conftest.py | 30 min | 全部上方 |
+| **小计** | **5 个文件** | **~3.5 h** | |
+
+
+**每日结束检查**:
+- [ ] 当日所有任务已完成
+- [ ] pytest 测试通过（如适用）
+- [ ] ruff check + mypy 通过（如适用）
+- [ ] 代码已提交
+**验收标准**:
+- [ ] `pytest tests/test_config.py -v` 全部通过（6 个）
+- [ ] get_settings() 返回单例
+- [ ] agnes_api_key 为空时自动回退 Mock 模式
+- [ ] base.py 的 _request_with_retry 逻辑正确
+- [ ] `ruff check src/` + `mypy src/` 通过
+
+#### 第 4 天 — Mock Provider 三层
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 编写 MockChatProvider | src/providers/mock_chat.py | 45 min | base, models/chat |
+| 编写 MockImageProvider | src/providers/mock_image.py | 30 min | base, models/image |
+| 编写 MockVideoProvider | src/providers/mock_video.py | 45 min | base, models/video |
+| 编写测试: ChatProvider | tests/test_providers/test_chat_provider.py | 30 min | mock_chat |
+| 编写测试: ImageProvider | tests/test_providers/test_image_provider.py | 30 min | mock_image |
+| 编写测试: VideoProvider | tests/test_providers/test_video_provider.py | 30 min | mock_video |
+| Provider __init__.py | tests/test_providers/__init__.py | 5 min | 无 |
+| **小计** | **7 个文件** | **~3.5 h** | |
+
+
+**每日结束检查**:
+- [ ] 当日所有任务已完成
+- [ ] pytest 测试通过（如适用）
+- [ ] ruff check + mypy 通过（如适用）
+- [ ] 代码已提交
+**验收标准**:
+- [ ] 三个 Mock Provider 测试全部通过（当日 18 个，累计 42+ 个）
+- [ ] `pytest tests/ -v` 全部通过（约 42 个）
+- [ ] MockChatProvider.chat() 返回预设文本
+- [ ] MockVideoProvider.poll_task() 模拟完整生命周期
+- [ ] 覆盖率 >= 85%
+
+#### 第 5 天 — 整合验证 + 提交
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 编写 Provider __init__.py | src/providers/__init__.py | 15 min | 全部 Provider |
+| 整合测试（端到端 Mock） | — | 45 min | 全部上方 |
+| 修复所有 ruff / mypy 错误 | — | 30 min | 全部 |
+| 补全缺失的测试用例 | — | 30 min | 全部 |
+| 生成覆盖率报告 | — | 15 min | pytest-cov |
+| 代码审查自检 | — | 30 min | 全部 |
+| 提交 Phase 1 完成 | — | 10 min | 全部 |
+| **小计** | **1 个文件** | **~3 h** | |
+
+
+**每日结束检查**:
+- [ ] 当日所有任务已完成
+- [ ] pytest 测试通过（如适用）
+- [ ] ruff check + mypy 通过（如适用）
+- [ ] 代码已提交
+**Phase 1 最终验收**:
+- [ ] `pytest --cov=src tests/ -v` 全部通过，覆盖率 >= 85%
+- [ ] `ruff check src/ tests/` 零错误
+- [ ] `mypy src/` 零错误
+- [ ] `pip install -e ".[dev,cli]"` 可正常安装
+- [ ] `python -c "from src.config import get_settings; print(get_settings().agnes_base_url)"` 可运行
+- [ ] Git 提交信息规范，包含 Phase 1 标记
+
+---
+
+
+### Phase 2: API 集成（第 2 周 | 5 天）
+
+**目标**: 三个真实 Provider 对接 Agnes AI API，通过真实 API 集成测试。
+
+#### 第 6 天 — ChatProvider 实现
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 实现 ChatProvider.chat() | src/providers/chat.py | 45 min | base, models/chat |
+| 实现 ChatProvider.chat_stream() | src/providers/chat.py | 30 min | base, models/chat |
+| 实现 ChatProvider.chat_with_tools() | src/providers/chat.py | 30 min | base, models/chat |
+| 实现 ChatProvider.chat_with_images() | src/providers/chat.py | 20 min | base, models/chat |
+| 实现 ChatProvider.chat_with_thinking() | src/providers/chat.py | 20 min | base, models/chat |
+| 编写 ChatProvider 集成测试 | tests/test_providers/test_chat_provider.py（追加）| 30 min | chat |
+| **小计** | **1 个文件 + 追加测试** | **~3 h** | |
+
+**验收标准**:
+- [ ] 使用真实 API Key 可执行 chat() 并返回正确响应
+- [ ] streaming 模式逐块输出
+- [ ] tool_calling 返回正确的 tool_calls 结构
+- [ ] chat_with_images 可处理 image_url
+- [ ] 重试机制在 502 时自动重试
+- [ ] 集成测试标记为 @pytest.mark.integration，默认跳过
+
+#### 第 7 天 — ImageProvider 实现
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 实现 ImageProvider.text_to_image() | src/providers/image.py | 40 min | base, models/image |
+| 实现 ImageProvider.image_to_image() | src/providers/image.py | 30 min | base, models/image |
+| 实现 ImageProvider.multi_image_composition() | src/providers/image.py | 20 min | base, models/image |
+| 实现 ImageProvider.download_image() | src/providers/image.py | 15 min | base |
+| 处理 extra_body.response_format 位置 | src/providers/image.py | 15 min | — |
+| 编写集成测试 | tests/（追加）| 30 min | image |
+| **小计** | **1 个文件 + 追加测试** | **~2.5 h** | |
+
+**验收标准**:
+- [ ] text_to_image() 返回有效的图片 URL
+- [ ] image_to_image() 正确传递 extra_body.image
+- [ ] response_format 不在顶层（使用 extra_body）
+- [ ] Data URI Base64 输入可用
+- [ ] 不同 size/ratio 组合输出正确分辨率
+
+#### 第 8 天 — VideoProvider 实现
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 实现 VideoProvider.create_task() | src/providers/video.py | 45 min | base, models/video |
+| 实现 VideoProvider.query_task() | src/providers/video.py | 30 min | base, models/video |
+| 实现 VideoProvider.poll_task() | src/providers/video.py | 45 min | base, models/video |
+| 实现 VideoProvider.download_video() | src/providers/video.py | 15 min | base |
+| 实现轮询失败处理逻辑 | src/providers/video.py | 30 min | — |
+| 编写集成测试 | tests/（追加）| 30 min | video |
+| **小计** | **1 个文件 + 追加测试** | **~3 h** | |
+
+**验收标准**:
+- [ ] create_task() 返回正确的 task_id + video_id
+- [ ] query_task(video_id) 可查询到任务状态
+- [ ] poll_task() 在 completed 时返回视频 URL
+- [ ] poll_task() 在 failed 时立即抛出 VideoPollingError
+- [ ] poll_task() 在超时时抛出 VideoTimeoutError
+- [ ] 网络抖动时自动重试
+
+#### 第 9 天 — 集成验证 + 边界情况
+
+| 任务 | 预估时间 |
+|------|---------|
+| Pipeline 集成测试（chat -> image -> video 串联）| 45 min |
+| 错误注入测试（无效 Key、超时、格式错误）| 30 min |
+| 关键帧动画模式测试（验证 extra_body.mode, multi-image, 平滑过渡） | 20 min |
+| Thinking 模式测试 | 20 min |
+| 边界参数测试（最小/最大值）| 30 min |
+| 编写 Provider __init__.py 工厂函数 | 15 min |
+| **小计** | **~3 h** |
+
+
+**每日结束检查**:
+- [ ] 当日所有任务已完成
+- [ ] pytest 测试通过
+- [ ] ruff check + mypy 通过
+- [ ] 代码已提交
+
+**验收标准**:
+- [ ] 全部集成测试在真实 API 上通过
+- [ ] 所有错误码（400/401/403/404/429/500/502/503）有对应的 Python 异常
+- [ ] 工厂函数 create_provider("chat") 返回正确实例
+- [ ] Mock 测试仍然全部通过
+
+#### 第 10 天 — 修复 + 提交 Phase 2
+
+| 任务 | 预估时间 |
+|------|---------|
+| 修复集成测试中发现的 bug | 60 min |
+| 补充单元测试覆盖边界 | 30 min |
+| 更新配置文件中的视频参数默认值（如有必要）| 15 min |
+| 代码审查自检 | 30 min |
+| 生成覆盖率报告 | 15 min |
+| 提交 Phase 2 | 10 min |
+| **小计** | **~2.5 h** |
+
+
+**每日结束检查**:
+- [ ] 当日所有任务已完成
+- [ ] pytest 测试通过
+- [ ] ruff check + mypy 通过
+- [ ] 代码已提交
+
+**Phase 2 最终验收**:
+- [ ] 三个 Provider 全部对接真实 API 成功
+- [ ] `pytest --cov=src tests/ -v` 覆盖率 >= 80%
+- [ ] `ruff check src/ tests/` + `mypy src/` 零错误
+- [ ] .env.example 与真实配置一致
+- [ ] Git 历史清晰
+
+---
+
+### Phase 3: Agent 层（第 3 周 | 5 天）
+
+**目标**: 三层 Agent + Orchestrator 编排器开发完成。
+
+#### 第 11 天 — Agent 基类 + TextAgent
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 实现 BaseAgent 抽象基类 | src/agents/base.py | 30 min | models/common |
+| 实现 TextAgent | src/agents/text_agent.py | 60 min | base, providers/chat |
+| 编写 TextAgent 测试 | tests/test_agents/test_text_agent.py | 30 min | text_agent |
+| Agent __init__.py | src/agents/__init__.py | 10 min | 全部 agents |
+| test_agents __init__.py | tests/test_agents/__init__.py | 5 min | 无 |
+| **小计** | **5 个文件** | **~2.5 h** | |
+
+**验收标准**:
+- [ ] TextAgent 包装了 ChatProvider 的全部方法
+- [ ] 对话历史自动累积
+- [ ] Agent 基类可扩展
+
+#### 第 12 天 — ImageAgent + VideoAgent
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 实现 ImageAgent | src/agents/image_agent.py | 45 min | base, providers/image |
+| 实现 VideoAgent | src/agents/video_agent.py | 60 min | base, providers/video, config |
+| 编写 ImageAgent 测试 | tests/test_agents/test_image_agent.py | 30 min | image_agent |
+| 编写 VideoAgent 测试 | tests/test_agents/test_video_agent.py | 30 min | video_agent |
+| **小计** | **4 个文件** | **~2.75 h** | |
+
+**验收标准**:
+- [ ] ImageAgent.generate_and_save() 缓存到 output_dir
+- [ ] VideoAgent 封装完整生命周期（创建->轮询->下载）
+- [ ] 测试覆盖正常路径 + 错误路径
+
+#### 第 13 天 — 工具定义 + Orchestrator（上）
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 实现全部工具定义 | src/agents/tools.py | 45 min | text_agent, image_agent, video_agent |
+| 实现 Orchestrator 意图识别逻辑 | src/agents/orchestrator.py | 60 min | text_agent |
+| 实现 System Prompt 模板 | src/agents/orchestrator.py | 30 min | — |
+| **小计** | **2 个文件** | **~2.25 h** | |
+
+#### 第 14 天 — Orchestrator（下）+ 编排测试
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 实现任务规划与执行调度 | src/agents/orchestrator.py | 60 min | 全部 agents |
+| 实现 Context 对象传递 | src/agents/orchestrator.py | 30 min | — |
+| 实现结果汇总 | src/agents/orchestrator.py | 30 min | — |
+| 编写 Orchestrator 测试 | tests/test_agents/test_orchestrator.py | 45 min | orchestrator |
+| **小计** | **1 个文件 + 追加** | **~2.75 h** | |
+
+**验收标准**:
+- [ ] Orchestrator.run("生成一张赛博朋克城市图") 返回 AgentResult
+- [ ] 意图识别 + 任务规划合并为一次 LLM 调用
+- [ ] Context 在子任务间正确传递
+- [ ] 纯文本请求不走 ImageProvider/VideoProvider
+
+#### 第 15 天 — 修复 + 提交 Phase 3
+
+| 任务 | 预估时间 |
+|------|---------|
+| 修复 Agent 层集成问题 | 45 min |
+| 补全测试用例 | 30 min |
+| Agent 层 E2E 测试（Mock 模式）| 30 min |
+| 覆盖率检查 | 15 min |
+| ruff + mypy 修复 | 15 min |
+| 提交 Phase 3 | 10 min |
+| **小计** | **~2.5 h** |
+
+
+**每日结束检查**:
+- [ ] 当日所有任务已完成
+- [ ] pytest 测试通过
+- [ ] ruff check + mypy 通过
+- [ ] 代码已提交
+
+**Phase 3 最终验收**:
+- [ ] 全部 Agent 测试通过（约 24 个）
+- [ ] `pytest --cov=src tests/ -v` 覆盖率 >= 80%
+- [ ] Orchestrator 可处理文本/图像/视频/组合四种场景
+- [ ] Context 传递正确
+- [ ] ruff + mypy 零错误
+
+---
+
+
+### Phase 3.5: 内部开发工具（第 3.5 周 | 2 天）
+
+**目标**: 开发团队内部使用的三个开发 Skills（agnes-dev / agnes-review / agnes-test）
+
+#### 第 16 天 - agnes-dev 实现
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 创建 internal 目录和 __init__.py | src/internal/__init__.py | 10 min | 全部 agents |
+| 实现代码模板引擎（Provider/Agent/CLI 骨架）| src/internal/templates.py | 45 min | -- |
+| 实现 gen_provider 工具（生成 Provider 骨架）| src/internal/dev_skill.py | 30 min | templates |
+| 实现 gen_agent 工具（生成 Agent 骨架）| src/internal/dev_skill.py | 30 min | templates |
+| 实现 gen_test_stub 工具（生成测试骨架）| src/internal/dev_skill.py | 30 min | templates |
+| 实现 analyze_error 工具（错误分析器）| src/internal/dev_skill.py | 20 min | exceptions |
+| 编写 agnes-dev SKILL.md 和 skill.json | src/internal/dev_skill.md | 15 min | -- |
+| **小计** | **5 个文件** | **~3 h** | |
+
+
+**每日结束检查**:
+- [ ] 当日所有任务已完成
+- [ ] pytest 测试通过（如适用）
+- [ ] ruff check + mypy 通过（如适用）
+- [ ] 代码已提交
+**验收标准**:
+- [ ] agnes-dev 可被 Codex 平台加载
+- [ ] gen_provider 生成符合项目规范的 Provider 骨架（含 abstract + mock）
+- [ ] gen_agent 生成 BaseAgent + 方法骨架
+- [ ] gen_test_stub 生成包含 5+ 个测试用例的测试文件
+- [ ] analyze_error 输入异常信息后输出结构化分析
+
+#### 第 17 天 - agnes-review + agnes-test
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 实现架构检查工具（检查分层依赖）| src/internal/review_skill.py | 30 min | dev_skill |
+| 实现命名规范检查工具 | src/internal/review_skill.py | 20 min | -- |
+| 实现评审报告生成工具 | src/internal/review_skill.py | 30 min | -- |
+| 编写 agnes-review SKILL.md 和 skill.json | src/internal/review_skill.md | 15 min | -- |
+| 实现测试用例自动生成工具 | src/internal/test_skill.py | 30 min | dev_skill |
+| 实现 Mock 对象自动生成工具 | src/internal/test_skill.py | 20 min | -- |
+| 实现覆盖率检查 + 测试报告工具 | src/internal/test_skill.py | 20 min | -- |
+| 编写 agnes-test SKILL.md 和 skill.json | src/internal/test_skill.md | 15 min | -- |
+| **小计** | **6 个文件** | **~3 h** | |
+
+
+**每日结束检查**:
+- [ ] 当日所有任务已完成
+- [ ] pytest 测试通过（如适用）
+- [ ] ruff check + mypy 通过（如适用）
+- [ ] 代码已提交
+**验收标准**:
+- [ ] agnes-review 和 agnes-test 可被 Codex 平台加载
+- [ ] gen_review_report(input_path) 输出结构化评审报告（含架构/命名/质量维度）
+- [ ] gen_test_case(class_path) 生成包含 5+ 个测试用例的 pytest 文件
+- [ ] gen_mock(provider_name) 生成符合项目规范的 MockProvider
+- [ ] check_coverage(path) 执行 coverage 并输出摘要
+- [ ] 三个内部 Skills 的 trigger 配置完整
+
+
+### Phase 4: 用户接口（第 3.5-4 周 | 5 天）
+
+**目标**: CLI + Codex Skill + 示例脚本完成。
+
+#### 第 18 天 — CLI 基础
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 实现 CLI 主入口 | src/cli.py | 30 min | 全部 agents |
+| 实现 chat 命令 | src/cli.py | 20 min | — |
+| 实现 image generate 命令 | src/cli.py | 20 min | — |
+| 实现 video generate 命令 | src/cli.py | 25 min | — |
+| 实现 run 命令（Orchestrator）| src/cli.py | 25 min | — |
+| **小计** | **1 个文件** | **~2 h** | |
+
+#### 第 19 天 — CLI 完善 + __main__
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 实现 __init__.py | src/__init__.py | 10 min | 无 |
+| 实现 __main__.py | src/__main__.py | 15 min | cli |
+| CLI 参数验证和错误提示 | src/cli.py | 20 min | — |
+| CLI 测试 | tests/（追加）| 30 min | cli |
+| **小计** | **2 个文件 + 追加** | **~1.25 h** | |
+
+**验收标准**:
+- [ ] `python -m src chat "你好"` 可运行
+- [ ] `python -m src image generate "猫"` 可运行
+- [ ] `python -m src run "帮我生成一张图片"` 可运行
+- [ ] 错误参数给出友好提示
+
+#### 第 20 天 — Codex Skill 入口
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 实现 skill.py 入口函数 | src/skill.py | 45 min | 全部 agents |
+| 编写 SKILL.md | SKILL.md | 45 min | 无 |
+| 编写 skill.json（含 triggers，标注为示例）| skill.json | 15 min | 无 |
+| **小计** | **3 个文件** | **~1.75 h** | |
+
+**验收标准**:
+- [ ] Codex 平台可识别 skill.json
+- [ ] 所有工具函数签名正确
+- [ ] SKILL.md 包含触发词和示例
+
+#### 第 21 天 — 示例脚本
+
+| 任务 | 文件 | 预估时间 | 依赖 |
+|------|------|---------|------|
+| 编写 chat_demo.py | examples/chat_demo.py | 20 min | 全部 agents |
+| 编写 image_generation.py | examples/image_generation.py | 20 min | 全部 agents |
+| 编写 video_generation.py | examples/video_generation.py | 25 min | 全部 agents |
+| 编写 multimodal_agent.py | examples/multimodal_agent.py | 30 min | 全部 agents |
+| 验证示例可运行（Mock 模式）| — | 20 min | — |
+| **小计** | **4 个文件** | **~2 h** | |
+
+**验收标准**:
+- [ ] 四个示例脚本均可通过 Mock 模式运行
+- [ ] README 中可直接引用示例
+
+#### 第 22 天 — 修复 + 提交 Phase 4
+
+| 任务 | 预估时间 |
+|------|---------|
+| CLI / Skill / 示例联调 | 45 min |
+| 补全遗漏的测试 | 30 min |
+| 用户体验打磨 | 30 min |
+| ruff + mypy 修复 | 15 min |
+| 提交 Phase 4 | 10 min |
+| **小计** | **~2 h** |
+
+
+**每日结束检查**:
+- [ ] 当日所有任务已完成
+- [ ] pytest 测试通过
+- [ ] ruff check + mypy 通过
+- [ ] 代码已提交
+
+**Phase 4 最终验收**:
+- [ ] CLI 四条命令均可运行
+- [ ] Codex Skill 可被平台加载
+- [ ] 四个示例脚本正常运行
+- [ ] 全部测试通过
+
+---
+
+### Phase 5: 文档与发布（第 5-5.5 周 | 5 天）
+
+**目标**: 完整文档 + 全面测试 + 开源发布。
+
+#### 第 23 天 — 架构 + API 文档
+
+| 任务 | 文件 | 预估时间 |
+|------|------|---------|
+| 编写架构文档 | docs/architecture.md | 60 min |
+| 完成 API 接口规范 | docs/api.md | 45 min |
+| **小计** | **2 个文件** | **~1.75 h** |
+
+#### 第 24 天 — 设计 + 测试文档
+
+| 任务 | 文件 | 预估时间 |
+|------|------|---------|
+| 编写设计决策文档 | docs/design.md | 45 min |
+| 编写测试策略文档 | docs/testing.md | 45 min |
+| **小计** | **2 个文件** | **~1.5 h** |
+
+#### 第 25 天 — 示例文档 + README
+
+| 任务 | 文件 | 预估时间 |
+|------|------|---------|
+| 编写使用示例文档 | docs/examples.md | 30 min |
+| 编写 README.md | README.md | 60 min |
+| 检查文档交叉引用一致性 | — | 30 min |
+| **小计** | **2 个文件** | **~2 h** |
+
+#### 第 26 天 — 全量测试 + 覆盖率冲刺
+
+| 任务 | 预估时间 |
+|------|---------|
+| 补全缺失的单元测试 | 60 min |
+| Mock E2E 测试 | 30 min |
+| 边界条件测试 | 30 min |
+| 覆盖率冲刺（目标 >= 85%）| 30 min |
+| lock 文件生成 | 10 min |
+| CI 配置验证 | 20 min |
+| **小计** | **~3 h** |
+
+
+**每日结束检查**:
+- [ ] 当日所有任务已完成
+- [ ] pytest 测试通过
+- [ ] ruff check + mypy 通过
+- [ ] 代码已提交
+
+#### 第 27 天 — 终审 + 发布
+
+| 任务 | 预估时间 |
+|------|---------|
+| 最终代码审查（自审）| 60 min |
+| 全量 ruff + mypy 检查 | 15 min |
+| 全量 pytest 确认 | 10 min |
+| 版本号确认 | 5 min |
+| GitHub 仓库创建并推送 | 15 min |
+| 打 Tag v1.0.0 | 5 min |
+| GitHub Release 创建 | 10 min |
+| **小计** | **~2 h** |
+
+
+**每日结束检查**:
+- [ ] 当日所有任务已完成
+- [ ] pytest 测试通过
+- [ ] ruff check + mypy 通过
+- [ ] 代码已提交
+
+**Phase 5 最终验收 — 项目发布标准**:
+- [ ] `pytest --cov=src tests/ -v` 全部通过，覆盖率 >= 85%
+- [ ] `ruff check src/ tests/` 零错误
+- [ ] `mypy src/` 零错误
+- [ ] 所有文档可读且无占位符
+- [ ] pyproject.toml 版本号为 1.0.0
+- [ ] lock 文件 (uv.lock / poetry.lock) 已生成并提交
+- [ ] GitHub CI (ruff -> mypy -> pytest -> coverage) 全部绿色
+- [ ] GitHub Release v1.0.0 已发布
+
+---
+
+## 4. 测试实施计划
+
+### 4.1 测试类型与阶段
+
+| 测试类型 | 工具 | 运行时机 | 要求 |
+|---------|------|---------|------|
+| 单元测试 | pytest | 每次提交前 | Phase 1 开始，持续维护 |
+| 类型检查 | mypy | 每次提交前 | Phase 1 开始，持续维护 |
+| 代码规范 | ruff | 每次提交前 | Phase 1 开始，持续维护 |
+| Provider Mock 测试 | pytest | 每次提交前 | Phase 1-2 |
+| Provider 集成测试 | pytest -m integration | 手动触发 | Phase 2-5 |
+| Agent 编排测试 | pytest | 每次提交前 | Phase 3-5 |
+| Skills 测试（可选自检）| pytest / 手动 | Skills 开发时 | Phase 3.5-5 |
+| E2E 测试 | pytest -m e2e | 手动触发 | Phase 4-5 |
+| 覆盖率检查 | pytest --cov | 每次提交前 | >= 80%（Phase 5: >= 85%）|
+
+### 4.2 各 Phase 测试目标
+
+| Phase | 测试文件数 | 测试用例数 | 覆盖率目标 |
+|-------|-----------|-----------|-----------|
+| Phase 1 | 4 | 18+ | >= 85% |
+| Phase 2 | 3（追加）| +18 (累计 36+) | >= 80% |
+| Phase 3 | 4 | +24 (累计 60+) | >= 80% |
+| Phase 3.5 | 3 | 0（Skills 无需传统测试；可选 self-test 验证模板和生成代码）| 不适用 |
+| Phase 4 | 1（追加）| +6 (累计 66+) | >= 80% |
+| Phase 5 | — | +20 (累计 86+) | >= 85% |
+
+### 4.3 推荐的 pytest 标记
+
+| 标记 | 用途 | 默认行为 |
+|------|------|---------|
+| @pytest.mark.asyncio | 异步测试 | 运行 |
+| @pytest.mark.integration | 需要真实 API Key 的测试 | 跳过 |
+| @pytest.mark.e2e | 端到端测试 | 跳过 |
+| @pytest.mark.slow | 耗时 > 30s 的测试 | 跳过 |
+
+```python
+# pyproject.toml 配置
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-v --strict-markers -m 'not slow'"
+markers = [
+    "integration: marks tests that require real API key (deselect with '-m \"not integration\"')",
+    "e2e: marks end-to-end tests (deselect with '-m \"not e2e\"')",
+    "slow: marks tests that take more than 30 seconds (deselect with '-m \"not slow\"')",
+]
+```
+
+### 4.4 测试执行命令速查
+
+```bash
+# 日常开发
+pytest tests/ -v                                      # 运行全部单元测试
+pytest tests/ -v -k "test_chat"                       # 运行特定测试
+pytest tests/ -v -m "not integration and not e2e"     # 跳过集成和 E2E 测试
+pytest --cov=src --cov-report=term-missing tests/      # 覆盖率 + 缺失行
+
+# 集成测试（需 API Key）
+pytest tests/ -v -m integration
+
+# 全量检查（提交前）
+ruff check src/ tests/
+mypy src/
+pytest --cov=src --cov-fail-under=80 tests/
+```
+
+---
+
+## 5. Git 提交策略
+
+### 5.1 提交规范
+
+每个提交信息使用约定式提交格式：
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+```
+
+| type | 说明 |
+|------|------|
+| feat | 新功能 |
+| fix | 修复 |
+| docs | 文档 |
+| style | 代码格式 / lint 修复（由 ruff 自动触发，不影响行为）|
+| refactor | 重构 |
+| test | 测试 |
+| chore | 构建/工具 |
+
+### 5.2 推荐的提交节点
+
+```
+Phase 1:
+  chore(init): initialize project structure and tooling
+  feat(exceptions): add exception hierarchy
+  feat(models): add data models (common/chat/image/video)
+  feat(config): add Pydantic Settings configuration
+  feat(providers): add base provider with retry logic
+  feat(providers): add mock providers for all three models
+  test: add unit tests for Phase 1
+  chore: Phase 1 baseline complete
+
+Phase 2:
+  feat(providers): implement ChatProvider for agnes-2.0-flash
+  feat(providers): implement ImageProvider for agnes-image-2.1-flash
+  feat(providers): implement VideoProvider for agnes-video-v2.0
+  test: add integration tests for Phase 2
+  chore: Phase 2 baseline complete
+
+Phase 3:
+  feat(agents): add BaseAgent and TextAgent
+  feat(agents): add ImageAgent with local caching
+  feat(agents): add VideoAgent with polling lifecycle
+  feat(agents): add tool definitions
+  feat(agents): add OrchestratorAgent with intent+plan merging
+  test: add agent unit tests for Phase 3
+  chore: Phase 3 baseline complete
+
+Phase 3.5:
+  feat(internal): add dev skill with code templates
+  feat(internal): add review skill with architecture checks
+  feat(internal): add test skill with test generation
+  chore: Phase 3.5 baseline complete
+
+Phase 4:
+  feat(cli): add CLI commands (chat/image/video/run)
+  feat(skill): add Codex Skill entry point
+  docs: add SKILL.md and skill.json
+  feat(examples): add example scripts
+  chore: Phase 4 baseline complete
+
+Phase 5:
+  docs: add architecture and API documentation
+  docs: add design and testing documentation
+  docs: add examples documentation and README
+  test: bump coverage to 85%+
+  chore: generate lock files
+  chore: v1.0.0 release
+```
+
+---
+
+## 6. 风险评估与回退方案
+
+### 6.1 风险矩阵
+
+| 风险 | 概率 | 影响 | 缓解措施 | 回退方案 |
+|------|------|------|---------|---------|
+| Agnes AI API 变更 | 中 | 高 | Provider 抽象层隔离变化 | 修改对应 Provider 实现，不波及上层 |
+| Agnes AI 免费政策取消 | 低 | 高 | 预留多 Provider 切换能力 | 切换至 OpenAI 等付费 Provider |
+| 视频生成超时 | 中 | 中 | 可配置的超时 + 指数退避 | 增加 video_timeout 配置上限 |
+| Python 3.10 兼容问题 | 低 | 低 | CI 中加入 3.10/3.11/3.12 矩阵 | 锁定到已知兼容版本 |
+| httpx 异步超时 | 低 | 中 | 配置 timeouts | 回退到同步 requests（备用路径）|
+| 依赖版本冲突 | 中 | 中 | lock 文件锁定版本 | 回到已知兼容的版本组合 |
+
+### 6.2 关键决策点
+
+| 时间 | 决策事项 | 参与人 | 依据 |
+|------|---------|--------|------|
+| Phase 1 完成 | 确认项目架构和技术选型 | 开发组 | 覆盖率 + ruff/mypy 通过 |
+| Phase 2 完成 | 确认 Agnes API 接口稳定性 | 开发组 | 集成测试全部通过 |
+| Phase 3 完成 | 确认 Agent 编排逻辑合理性 | 开发组 | 编排测试覆盖全部场景 |
+| Phase 3.5 完成 | 确认内部开发 Skills 可用 | 开发组 | 三个 Skills 可加载并运行 |
+| Phase 4 完成 | 确认用户接口可用性 | 开发组 + 体验组 | 示例脚本可运行 |
+| Phase 5 完成 | 确认正式发布 | 全体 | 发布标准清单全部满足 |
+
+### 6.3 如果某个 Phase 延期
+
+- 延期 <= 2 天：压缩 Phase 5 文档编写时间（文档可后期迭代补充）
+- 延期 3-5 天：裁剪 Phase 5 中的非关键文档（如 api.md 可后补）
+- 延期 > 5 天：评估是否从 Phase 5 中拆分"v1.0 核心"和"v1.1 文档完善"
+
+---
+
+## 7. 开发环境配置
+
+### 7.1 一键初始化
+
+```bash
+# 1. 克隆项目
+git clone <repo-url>
+cd agnes-mini
+
+# 2. 创建虚拟环境
+uv venv .venv
+source .venv/bin/activate  # Linux/Mac
+.venv\Scripts\activate     # Windows
+
+# 3. 安装依赖
+uv pip install -e ".[dev,cli]"
+
+# 4. 配置环境变量
+cp .env.example .env
+# 编辑 .env 填入 AGNES_API_KEY=your-key
+
+# 5. 验证安装
+python -c "from src.config import get_settings; print('OK:', get_settings().agnes_base_url)"
+```
+
+### 7.2 VS Code 推荐配置
+
+```json
+// .vscode/settings.json
+{
+  "python.defaultInterpreterPath": ".venv/Scripts/python.exe",
+  "python.analysis.typeCheckingMode": "strict",
+  "python.linting.enabled": true,
+  "python.linting.ruffEnabled": true,
+  "python.formatting.provider": "ruff",
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true
+  }
+}
+```
+
+### 7.3 pre-commit 钩子配置
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [pydantic]
+```
+
+---
+
+## 8. 附录: 关键参考信息
+
+### 8.1 Agnes AI API 端点速查
+
+| 模型 | 端点 | 方法 |
+|------|------|------|
+| agnes-2.0-flash | /v1/chat/completions | POST |
+| agnes-image-2.1-flash | /v1/images/generations | POST |
+| agnes-video-v2.0 (创建) | /v1/videos | POST |
+| agnes-video-v2.0 (查询) | /agnesapi?video_id= | GET |
+| agnes-video-v2.0 (兼容查询) | /v1/videos/{task_id} | GET |
+
+### 8.2 关键依赖版本锁
+
+| 包名 | 最低版本 | 建议版本 | 用途 |
+|------|---------|---------|------|
+| pydantic | 2.10 | 2.10+ | 数据模型 |
+| pydantic-settings | 2.6 | 2.6+ | 配置管理 |
+| httpx | 0.28 | 0.28+ | 异步 HTTP |
+| pytest | 8.0 | 8.3+ | 测试 |
+| pytest-asyncio | 0.24 | 0.24+ | 异步测试 |
+| pytest-cov | 6.0 | 6.0+ | 覆盖率 |
+| ruff | 0.8 | 0.8+ | 代码规范 |
+| mypy | 1.13 | 1.13+ | 类型检查 |
+| typer | 0.15 | 0.15+ | CLI（可选）|
+
+### 8.3 项目里程碑标记
+
+| Git Tag | 内容 |
+|---------|------|
+| v0.1.0 | Phase 1 — 基础工程框架 |
+| v0.2.0 | Phase 2 — API 集成 |
+| v0.3.0 | Phase 3 — Agent 层 |
+| v0.35.0 | Phase 3.5 — 内部开发工具 |
+| v0.4.0 | Phase 4 — 用户接口 |
+| v1.0.0 | Phase 5 — 正式发布 |
