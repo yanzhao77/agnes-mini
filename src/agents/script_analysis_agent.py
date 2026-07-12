@@ -32,6 +32,12 @@ class ScriptAnalysisAgent(BaseAgent):
         )
 
     async def decompose(self, script_text: str) -> ScriptAnalysisResult:
+        if self.settings.is_mock_mode:
+            result = ScriptAnalysisResult()
+            result.characters = [{"name": "Grandpa", "appearance_description": "Old man in Mao suit"}, {"name": "Girl", "appearance_description": "Android girl in linen"}]
+            result.scenes = [{"name": "Kitchen", "layout_description": "NYE kitchen"}]
+            result.shots = [{"shot_number": i, "description": f"Shot {i}", "duration": 5.0, "character_refs": ["Grandpa"], "scene_ref": "Kitchen"} for i in range(1, 10)]
+            return result
         prompt = ANALYSIS_PROMPT + "\n\n---\n" + script_text[:8000]
         from src.models.chat import ChatMessage, ChatRequest
         request = ChatRequest(messages=[ChatMessage(role="user", content=prompt)])

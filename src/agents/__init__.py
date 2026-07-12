@@ -1,5 +1,7 @@
 """Agent layer for Agnes Mini."""
 from src.agents.base import BaseAgent
+from src.agents.consistent_generator import ConsistentGenerator
+from src.agents.reference_generator import ReferenceGenerator
 from src.agents.script_analysis_agent import ScriptAnalysisAgent, ScriptAnalysisResult
 from src.agents.image_agent import ImageAgent
 from src.agents.orchestrator import AgentResult, OrchestratorAgent
