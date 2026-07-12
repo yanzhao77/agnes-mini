@@ -1,57 +1,53 @@
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="Python 3.10+">
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
+  <img src="https://img.shields.io/badge/license-GPL%20v3-blueviolet" alt="GPL v3">
   <img src="https://img.shields.io/badge/version-2.0.0-blueviolet" alt="Version 2.0.0">
   <img src="https://img.shields.io/badge/coverage-65%25-brightgreen" alt="Coverage 65%+">
   <img src="https://img.shields.io/badge/code%20style-ruff-000000" alt="Ruff">
 </p>
 
 <p align="center">
-  <strong>Lightweight Python SDK for the Agnes AI API</strong>
+  <strong>Agnes Mini — Agnes AI API 轻量 Python SDK</strong>
   <br>
-  Chat, images, videos, and script-to-video pipelines — all with type safety and async support.
+  对话、图像、视频、剧本转视频管道 — 类型安全、纯异步。
 </p>
 
 ---
 
-## Features
+## 特性
 
-- **Chat Completions** — streaming, tools, multi-modal, thinking mode
-- **Image Generation** — text-to-image, image-to-image, multi-image composition
-- **Video Generation** — async task creation with polling and auto-download
-- **Smart Orchestration** — agents route requests to the right provider automatically
-- **Script-to-Video Pipeline** — decompose scripts, generate consistent character/scene banks, produce videos
-- **Mock Mode** — develop and test without an API key (zero configuration needed)
-- **Type-Safe** — Pydantic v2 models throughout
-- **Async Native** — built on httpx with automatic retry and rate limiting
-- **CLI Interface** — Typer-based command-line tool
-- **Graceful Error Handling** — rich exception hierarchy with descriptive messages
+- **对话补全** — 流式输出、工具调用、多模态、思维链
+- **图像生成** — 文生图、图生图、多图合成
+- **视频生成** — 异步任务创建、轮询、自动下载
+- **智能路由** — Agent 自动识别意图并分发请求
+- **剧本转视频管道** — 剧本分解、角色/场景一致性生成、出片
+- **Mock 模式** — 无需 API Key 即可开发测试，零配置运行
+- **类型安全** — 全站 Pydantic v2 数据模型
+- **纯异步** — 基于 httpx，自动重试 + 限速
+- **命令行界面** — 基于 Typer 的 CLI 工具
+- **优雅错误处理** — 丰富的异常继承体系
 
 ---
 
-## Installation
+## 安装
 
-### From source
+### 源码安装
 
 ```bash
-git clone https://github.com/yourusername/agnes-mini.git
+git clone https://github.com/yanzhao77/agnes-mini.git
 cd agnes-mini
-
-# Create virtual environment
 python -m venv .venv
-source .venv/bin/activate   # macOS/Linux
-
-# Install in editable mode
+source .venv/bin/activate
 pip install -e .
 ```
 
-### With CLI extras
+### 安装 CLI 扩展
 
 ```bash
 pip install -e ".[cli]"
 ```
 
-### With development tools
+### 安装开发工具
 
 ```bash
 pip install -e ".[dev]"
@@ -59,22 +55,22 @@ pip install -e ".[dev]"
 
 ---
 
-## Quick Start
+## 快速开始
 
-### 1. Set up your API key (or skip for mock mode)
+### 1. 配置 API Key（可跳过，直接使用 Mock 模式）
 
 ```bash
 cp .env.example .env
 ```
 
-Edit .env:
+编辑 .env 填入你的 Key：
 
 ```ini
 AGNES_API_KEY=sk-your-key-here
 AGNES_BASE_URL=https://api.agnesai.com
 ```
 
-### 2. Chat with the AI
+### 2. 对话测试
 
 ```python
 import asyncio
@@ -82,13 +78,13 @@ from src.agents.text_agent import TextAgent
 
 async def main():
     agent = TextAgent()
-    response = await agent.chat("Hello! What can you do?")
+    response = await agent.chat("你好！请介绍一下你自己")
     print(response.choices[0].message.content)
 
 asyncio.run(main())
 ```
 
-### 3. Generate an image
+### 3. 生成图像
 
 ```python
 import asyncio
@@ -96,49 +92,49 @@ from src.agents.image_agent import ImageAgent
 
 async def main():
     agent = ImageAgent()
-    result = await agent.generate("A cyberpunk city at night, neon lights")
+    result = await agent.generate("赛博朋克风格的夜景城市，霓虹灯光")
     for url in result.urls:
         print(url)
 
 asyncio.run(main())
 ```
 
-### 4. Use the CLI
+### 4. 使用 CLI
 
 ```bash
-agnes chat "Tell me about Agnes AI"
-agnes image "A beautiful sunset over mountains"
-agnes video "A drone flying over a futuristic city"
-agnes run "Generate an image of a cat wearing a hat"
+agnes chat "介绍一下 Agnes AI"
+agnes image "日落时分的壮丽山景"
+agnes video "无人机飞越未来城市"
+agnes run "生成一张戴帽子的猫的图片"
 ```
 
-> No API key? No problem — all examples work in **mock mode** with zero configuration.
+> 没有 API Key？以上所有示例在 Mock 模式下零配置即可运行。
 
 ---
 
-## Configuration
+## 配置项
 
-All settings are loaded from environment variables or a .env file:
+所有配置项通过环境变量或 .env 文件加载：
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| AGNES_API_KEY | "" | API key (empty = mock mode) |
-| AGNES_BASE_URL | https://api.agnesai.com | API base URL |
-| AGNES_CHAT_MODEL | agnes-2.0-flash | Chat model name |
-| AGNES_IMAGE_MODEL | agnes-image-2.1-flash | Image model name |
-| AGNES_VIDEO_MODEL | agnes-video-v2.0 | Video model name |
-| AGNES_TIMEOUT | 60 | HTTP request timeout (seconds) |
-| AGNES_MAX_RETRIES | 3 | Max retries for failed requests |
-| AGNES_VIDEO_POLL_INTERVAL | 5 | Video status poll interval (seconds) |
-| AGNES_VIDEO_POLL_TIMEOUT | 600 | Max video generation wait (seconds) |
-| AGNES_LOG_LEVEL | INFO | Logging level |
-| AGNES_OUTPUT_DIR | ./output | Output directory for generated files |
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| AGNES_API_KEY | "" | API Key（为空则自动进入 Mock 模式） |
+| AGNES_BASE_URL | https://api.agnesai.com | API 基础地址 |
+| AGNES_CHAT_MODEL | agnes-2.0-flash | 对话模型 |
+| AGNES_IMAGE_MODEL | agnes-image-2.1-flash | 图像模型 |
+| AGNES_VIDEO_MODEL | agnes-video-v2.0 | 视频模型 |
+| AGNES_TIMEOUT | 60 | HTTP 请求超时（秒） |
+| AGNES_MAX_RETRIES | 3 | 最大重试次数 |
+| AGNES_VIDEO_POLL_INTERVAL | 5 | 视频状态轮询间隔（秒） |
+| AGNES_VIDEO_POLL_TIMEOUT | 600 | 视频生成最大等待时间（秒） |
+| AGNES_LOG_LEVEL | INFO | 日志级别 |
+| AGNES_OUTPUT_DIR | ./output | 文件输出目录 |
 
 ---
 
 ## Python API
 
-### Chat
+### 对话
 
 ```python
 from src.models.chat import ChatRequest, ChatMessage
@@ -147,7 +143,7 @@ from src.providers.chat import ChatProvider
 async def example():
     provider = ChatProvider()
     request = ChatRequest(
-        messages=[ChatMessage(role="user", content="Hello!")],
+        messages=[ChatMessage(role="user", content="你好！")],
         temperature=0.7,
         max_tokens=1024,
     )
@@ -155,7 +151,7 @@ async def example():
     print(response.choices[0].message.content)
 ```
 
-**Streaming:**
+**流式输出：**
 
 ```python
 async for chunk in provider.chat_stream(request):
@@ -163,16 +159,16 @@ async for chunk in provider.chat_stream(request):
         print(chunk.choices[0].delta.content, end="")
 ```
 
-**Thinking mode:**
+**思维链模式：**
 
 ```python
 request = ChatRequest(
-    messages=[ChatMessage(role="user", content="Explain quantum computing")],
+    messages=[ChatMessage(role="user", content="解释一下量子计算")],
     extra_body={"thinking": True},
 )
 ```
 
-### Image Generation
+### 图像生成
 
 ```python
 from src.models.image import ImageRequest, ImageSize
@@ -181,7 +177,7 @@ from src.providers.image import ImageProvider
 async def example():
     provider = ImageProvider()
     request = ImageRequest(
-        prompt="A serene Japanese garden in autumn",
+        prompt="秋日宁静的日本庭园",
         n=1,
         size=ImageSize.SIZE_1024x1024,
     )
@@ -190,31 +186,31 @@ async def example():
         print(f"URL: {img.url}")
 ```
 
-**Image-to-Image:**
+**图生图：**
 
 ```python
 from src.models.image import ImageToImageRequest
 request = ImageToImageRequest(
-    prompt="Make it a winter scene with snow",
+    prompt="改成冬季雪景",
     image="https://example.com/summer_garden.jpg",
     strength=0.7,
 )
 response = await provider.image_to_image(request)
 ```
 
-**Multi-Image Composition:**
+**多图合成：**
 
 ```python
 from src.models.image import MultiImageCompositionRequest
 request = MultiImageCompositionRequest(
-    prompt="Combine these images into one coherent scene",
+    prompt="将这些图片合成为一个统一场景",
     images=["https://example.com/bg.jpg", "https://example.com/character.png"],
     mode="composition",
 )
 response = await provider.multi_image_composition(request)
 ```
 
-### Video Generation
+### 视频生成
 
 ```python
 from src.models.video import VideoRequest, VideoDuration
@@ -223,52 +219,38 @@ from src.providers.video import VideoProvider
 async def example():
     provider = VideoProvider()
     request = VideoRequest(
-        prompt="Cinematic drone shot over a cyberpunk city at night",
+        prompt="赛博朋克城市夜景，电影级航拍镜头",
         duration=VideoDuration.SECONDS_5,
     )
-
-    # Step 1: Create the video task
     task = await provider.create_task(request)
-    print(f"Task ID: {task.task_id}")
-
-    # Step 2: Poll until complete
+    print(f"任务 ID: {task.task_id}")
     result = await provider.poll_task(task.task_id)
-    print(f"Video URL: {result.video_url}")
-
-    # Step 3: Download the video
+    print(f"视频 URL: {result.video_url}")
     local_path = await provider.download_video(result.video_url, "./output/video.mp4")
-```
-
 ---
 
-## Agent Orchestration
+## Agent 智能路由
 
-The OrchestratorAgent intelligently routes requests to the right sub-agent based on intent detection:
+OrchestratorAgent 通过意图识别自动将请求分发到对应的子 Agent：
 
 ```python
 from src.agents.orchestrator import OrchestratorAgent
 
 async def demo():
     orch = OrchestratorAgent()
-
-    # Automatically routed to TextAgent
-    result = await orch.run("What is the capital of France?")
+    result = await orch.run("法国的首都是哪里？")
     print(result.text)
-
-    # Automatically routed to ImageAgent
-    result = await orch.run("Generate an image of a peaceful mountain lake")
+    result = await orch.run("生成一张宁静湖景图片")
     print(result.image_urls)
-
-    # Automatically routed to VideoAgent
-    result = await orch.run("Create a video of waves crashing on a beach")
+    result = await orch.run("生成一个海浪拍打沙滩的视频")
     print(result.video_urls)
 ```
 
 ---
 
-## Script-to-Video Pipeline (v2)
+## 剧本转视频管道（v2）
 
-The ConsistentPipeline takes a narrative script and produces a complete video with consistent characters and scenes:
+ConsistentPipeline 将叙事剧本自动转换成角色和场景一致的多镜头视频：
 
 ```python
 import asyncio
@@ -276,150 +258,87 @@ from src.pipeline_v2 import ConsistentPipeline
 
 async def main():
     pipeline = ConsistentPipeline()
-
-    script = \"\"\"
-    Title: The Last Dumpling
-    An old man in a Mao suit prepares dumplings on New Year's Eve.
-    His android granddaughter watches quietly...
-    \"\"\"
-
+    script = """标题：最后一颗香料
+一位身穿中山装的老人正在除夕夜包饺子。
+他的仿生人孙女静静地看着..."""
     result = await pipeline.run(script)
-    print(f"Status: {result['status']}")
     for shot in result.get("results", []):
-        print(f"  Shot {shot['shot']}: image={shot['image']}, video={shot['video']}")
+        print(f"  镜头 {shot['shot']}: 图片={shot['image']}, 视频={shot['video']}")
 
 asyncio.run(main())
 ```
 
-**What it does:**
+**管道流程：**
 
-1. **Script Analysis** — LLM decomposes the script into characters, scenes, and shots
-2. **Reference Generation** — builds character banks (multi-view, expressions) and scene banks (variants)
-3. **Consistent Generation** — produces images and videos using character/scene references for visual consistency
-4. **Rate Limiting** — respects API rate limits during video generation
-5. **State Persistence** — saves pipeline state after every step for resumability
-
----
-
-## Mock Mode
-
-When AGNES_API_KEY is empty (or set to "mock"), all providers automatically fall back to mock implementations:
-
-- **MockChatProvider** — responds with natural placeholder answers
-- **MockImageProvider** — returns placeholder URLs (no real generation cost)
-- **MockVideoProvider** — simulates task creation and polling
-- **Mock Script Analysis** — returns predefined character/scene/shot structures
-
-This allows full development, testing, and CI integration without API credentials.
+1. **剧本分析** — LLM 将剧本分解为角色、场景和镜头
+2. **参考图生成** — 构建角色库（多视角 + 表情）和场景库（多变体）
+3. **一致性生成** — 基于参考图生成风格统一的图片和视频
+4. **限速保护** — 自动遵守 API 速率限制
+5. **状态持久化** — 每阶段保存中间状态，支持断点续跑
 
 ---
 
-## Error Handling
+## Mock 模式
 
-Agnes Mini provides a rich exception hierarchy:
+当 AGNES_API_KEY 为空（或设为 mock）时，所有 Provider 自动降级为 Mock 实现，无需 API 凭据即可完成开发、测试和 CI 集成。
 
-| Exception | When It Occurs |
-|-----------|----------------|
-| ProviderAuthenticationError | Invalid API key (401) |
-| ProviderRateLimitError | Rate limit exceeded (429) |
-| ProviderServerError | Server-side error (5xx) |
-| ProviderTimeoutError | Request timed out |
-| VideoCreationError | Video task creation failed |
-| VideoTimeoutError | Video generation exceeded timeout |
-| ConfigError | Configuration issues |
-| AgentExecutionError | Agent execution failed |
+---
 
-All exceptions inherit from AgnesMiniError for clean catch-all handling:
+## 异常处理
 
-```python
-from src.exceptions import AgnesMiniError, ProviderAuthenticationError
+| 异常类 | 触发条件 |
+|--------|----------|
+| ProviderAuthenticationError | API Key 无效（401） |
+| ProviderRateLimitError | 请求频率超限（429） |
+| ProviderServerError | 服务端错误（5xx） |
+| ProviderTimeoutError | 请求超时 |
+| VideoCreationError | 视频任务创建失败 |
+| VideoTimeoutError | 视频生成超时 |
+| ConfigError | 配置错误 |
 
-try:
-    result = await agent.generate(prompt)
-except ProviderAuthenticationError:
-    print("Please check your API key")
-except AgnesMiniError as e:
-    print(f"Agnes Mini error: {e}")
+所有异常继承自 AgnesMiniError，方便统一捕获。
+
+---
+
+## 架构
+
+```
++-----------------------------+
+|          CLI                |
+|    (typer - src/cli.py)     |
++-----------------------------+
+|          Agents             |
+|  Text | Image | Video | Orch |
++-----------------------------+
+|        Providers            |
+|  Chat | Image | Video | Mock|
++-----------------------------+
+|   httpx (自动重试+限速)     |
++-----------------------------+
+|    Pydantic v2 Models       |
++-----------------------------+
+|    Agnes AI API (REST)      |
++-----------------------------+
 ```
 
 ---
 
-## Architecture
-
-```
-???????????????????????????????????????????????
-?                   CLI                        ?
-?           (typer — src/cli.py)               ?
-???????????????????????????????????????????????
-?                  Agents                      ?
-?  ???????? ???????? ???????? ?????????????? ?
-?  ?Text  — ?Image — ?Video — ?Orchestrator — ?
-?  ?Agent — ?Agent — ?Agent — ?Agent        — ?
-?  ???????? ???????? ???????? ?????????????? ?
-???????????????????????????????????????????????
-?      —        —        —                     ?
-?  ??????????????????????????????????          ?
-?  —         Providers              —          ?
-?  —  Chat  —  Image  —  Video      —          ?
-?  — Provider?Provider?Provider   —          ?
-?  —  Mock  —  Mock   —  Mock      —          ?
-?  ??????????????????????????????????          ?
-?      —        —        —                     ?
-?  ??????????????????????????????????          ?
-?  —   HTTP Client (httpx)          —          ?
-?  —   with retry & rate limiting   —          ?
-?  ??????????????????????????????????          ?
-???????????????????????????????????????????????
-?              Data Models                     ?
-?  Pydantic v2 — Chat, Image, Video, Scene     ?
-???????????????????????????????????????????????
-?         Agnes AI API (REST)                  ?
-???????????????????????????????????????????????
-```
-
----
-
-## Development
+## 开发
 
 ```bash
-# Set up
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 
-# Run tests
 pytest tests/ -v
-
-# With coverage
 pytest --cov=src tests/
-
-# Lint and format
 ruff check src/
 ruff format src/
-
-# Type checking
 mypy src/
 ```
 
-### Test Structure
-
-- **Unit tests** — test providers, agents, and models with mock implementations
-- **Integration tests** (marked pytest.mark.integration) — require a real API key
-- **E2E tests** (marked pytest.mark.e2e) — full pipeline tests
-
 ---
 
-## Contributing
+## 许可证
 
-1. Fork the repository
-2. Create a feature branch (git checkout -b feature/amazing-feature)
-3. Make your changes
-4. Run tests and linting (pytest tests/ && ruff check src/)
-5. Commit with conventional commit messages
-6. Open a Pull Request
-
----
-
-## License
-
-GPL-3.0 — see LICENSE for details.
+GNU General Public License v3.0 — 详见 LICENSE
