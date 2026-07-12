@@ -1,6 +1,11 @@
 {
   "name": "agnes-mini",
-  "version": "1.0.0",
-  "description": "Agnes Mini - Lightweight Python SDK",
-  "tools": ["agnes_run", "get_available_tools"]
+  "version": "2.0.0",
+  "description": "Agnes AI API 轻量 Python SDK — 对话、图像、视频生成与剧本转视频管道",
+  "tools": ["agnes_run", "get_available_tools"],
+  "environment": {
+    "python": ">=3.10",
+    "dependencies": ["pydantic>=2.10", "httpx>=0.28"],
+    "install": "pip install -e ."
+  }
 }

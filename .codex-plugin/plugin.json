@@ -1,0 +1,25 @@
+{
+  "name": "agnes-mini",
+  "version": "2.0.0",
+  "description": "Agnes AI API 轻量 Python SDK — 对话、图像生成、视频生成与剧本转视频管道",
+  "skills": [
+    {
+      "name": "agnes-mini",
+      "description": "通过 Agnes AI API 实现对话聊天、图像生成、视频生成，以及剧本自动分解为多镜头视频的完整管道",
+      "triggers": [
+        "agnes",
+        "Agnes AI",
+        "生成图片",
+        "生成图像",
+        "生成视频",
+        "对话",
+        "聊天",
+        "AI 聊天",
+        "剧本转视频",
+        "视频管道",
+        "脚本转视频"
+      ],
+      "tools": ["agnes_run", "get_available_tools"]
+    }
+  ]
+}
