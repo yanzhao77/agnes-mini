@@ -31,6 +31,7 @@ from src.models.image import (
     ImageToImageRequest,
     MultiImageCompositionRequest,
 )
+from src.models.script import Script, Shot
 from src.models.video import (
     VideoPollConfig,
     VideoQueryResponse,
@@ -69,5 +70,7 @@ __all__ = [
     "VideoRequest",
     "VideoResult",
     "VideoStatus",
+    "Script",
+    "Shot",
     "VideoTaskResponse",
 ]
