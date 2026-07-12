@@ -7,7 +7,7 @@ from src.models.character import Character, CharacterBank, CharacterExpression, 
 from src.models.scene import Scene, SceneBank, SceneVariant
 
 BASE = "https://apihub.agnes-ai.com"
-HEADERS = {"Authorization": "Bearer {api_key}", "Content-Type": "application/json"}
+# Headers constructed per-call with actual api_key
 
 async def _img2img(base_url: str, prompt: str, api_key: str) -> str:
     async with httpx.AsyncClient(timeout=120, verify=False) as c:
@@ -24,7 +24,7 @@ class ReferenceGenerator(BaseAgent):
     AGENT_TYPE = "reference"
     def __init__(self, settings: Any = None) -> None:
         super().__init__(settings)
-        self._api_key = settings.api_key if not settings.is_mock_mode else "mock"
+self._api_key = self.settings.api_key if not self.settings.is_mock_mode else "mock"
 
     async def build_character_bank(self, characters_data: list[dict]) -> CharacterBank:
         bank = CharacterBank()
@@ -50,7 +50,7 @@ class ReferenceGenerator(BaseAgent):
         async with httpx.AsyncClient(timeout=120, verify=False) as c:
             for attempt in range(3):
                 try:
-                    r = await c.post(f"{BASE}/v1/images/generations", headers=HEADERS, json={"model": "agnes-image-2.1-flash", "prompt": desc + ", cinematic, high quality"})
+                    r = await c.post(f"{BASE}/v1/images/generations", headers={"Authorization": f"Bearer {self._api_key}", "Content-Type": "application/json"}, json={"model": "agnes-image-2.1-flash", "prompt": desc + ", cinematic, high quality"})
                     return r.json()["data"][0]["url"]
                 except: await asyncio.sleep(2**attempt)
         return ""

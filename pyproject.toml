@@ -7,7 +7,7 @@ name = "agnes-mini"
 version = "2.0.0"
 description = "Agnes Mini - Lightweight Python SDK for Agnes AI API"
 readme = "README.md"
-license = { text = "MIT" }
+license = { text = "GPL-3.0-only" }
 authors = [
     { name = "Agnes AI Team", email = "dev@agnes.ai" },
 ]

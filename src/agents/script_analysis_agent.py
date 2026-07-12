@@ -9,11 +9,11 @@ from src.models.script import Script, Shot
 from src.providers.chat import ChatProvider
 from src.providers.mock_chat import MockChatProvider
 
-ANALYSIS_PROMPT = """You are a video script analysis assistant. Analyze this script and output a JSON object with:
-- characters: array of {name, appearance_description, clothing_description}
-- scenes: array of {name, layout_description, lighting_description}
-- shots: array of {shot_number, description, duration, character_refs (list), scene_ref (string), image_prompt, video_prompt}
-Output ONLY valid JSON, no markdown wrapping."""
+ANALYSIS_PROMPT = """You are a video script analysis assistant. Analyze this script and output ONLY valid JSON (no markdown). Use EXACT key names:
+characters=[{name,appearance_description,clothing_description}]
+scenes=[{name,layout_description,lighting_description}]
+shots=[{shot_number,description,duration(5.0 as float),character_refs(list of character names),scene_ref(string),image_prompt, video_prompt}].
+IMPORTANT: Use EXACT key names: appearance_description, clothing_description, layout_description, lighting_description, shot_number."""
 
 class ScriptAnalysisResult:
     def __init__(self):
@@ -49,15 +49,26 @@ class ScriptAnalysisAgent(BaseAgent):
                 data = self._parse_json(raw)
                 if data:
                     result = ScriptAnalysisResult()
-                    result.characters = data.get("characters", [])
-                    result.scenes = data.get("scenes", [])
-                    result.shots = data.get("shots", [])
+                    result.characters = self._normalize_keys(data.get("characters", []), {"appearance":"appearance_description","clothing":"clothing_description","layout":"layout_description","lighting":"lighting_description"})
+                    result.scenes = self._normalize_keys(data.get("scenes", []), {"layout":"layout_description","lighting":"lighting_description"})
+                    result.shots = self._normalize_keys(data.get("shots", []), {"id":"shot_number","time":"description"})
                     return result
             except Exception as e:
                 self._logger.warning("Attempt %d failed: %s", attempt + 1, e)
                 if attempt == 0:
                     prompt += "\n\nPrevious output was not valid JSON. Output ONLY valid JSON."
         raise ValueError(f"Failed after 2 attempts. Raw: {raw[:200]}")
+
+    @staticmethod
+    def _normalize_keys(data: list[dict], mapping: dict) -> list[dict]:
+        """Normalize keys in a list of dicts using the provided mapping."""
+        result = []
+        for item in data:
+            new_item = {}
+            for k, v in item.items():
+                new_item[mapping.get(k, k)] = v
+            result.append(new_item)
+        return result
 
     def _parse_json(self, text: str) -> dict | None:
         text = re.sub(r"^`(?:json)?\s*", "", text.strip())
