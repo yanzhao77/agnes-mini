@@ -110,6 +110,50 @@ agnes run "生成一张戴帽子的猫的图片"
 
 > 没有 API Key？以上所有示例在 Mock 模式下零配置即可运行。
 
+
+---
+
+## Codex 集成
+
+本仓库可直接作为 **Codex 技能/插件** 导入使用，无需额外配置。
+
+### 安装方式
+
+**方式一：从 GitHub 安装（推荐）**
+
+在 Codex 中运行 skill-installer 命令：
+
+```bash
+install-skill https://github.com/yanzhao77/agnes-mini
+```
+
+**方式二：克隆到本地**
+
+```bash
+git clone https://github.com/yanzhao77/agnes-mini.git
+cd agnes-mini
+pip install -e .
+```
+
+然后使用 Codex 打开该项目目录即可自动识别。
+
+### 触发关键词
+
+在 Codex 中输入以下关键词即可唤醒 Agnes Mini：
+
+| 关键词 | 功能 |
+|--------|------|
+| agnes / Agnes AI | 唤醒技能 |
+| 生成图片 / 生成图像 | 调用图像生成 |
+| 生成视频 | 调用视频生成 |
+| 对话 / 聊天 | 调用对话补全 |
+| 剧本转视频 / 脚本转视频 | 调用完整视频管道 |
+
+### Mock 模式
+
+不配置 API Key 时自动进入 Mock 模式，所有功能**无需真实 API 凭据**即可在 Codex 中开发和测试。
+
+
 ---
 
 ## 配置项
