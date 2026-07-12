@@ -46,19 +46,19 @@ class VideoProvider(BaseProvider):
         )
 
     async def query_task(self, task_id: str) -> VideoQueryResponse:
-        try:
-            response = await self._request_with_retry("GET", f"/v1/videos/{task_id}")
-        except Exception:
-            response = await self._request_with_retry("GET", f"/agnesapi?video_id={task_id}")
+        response = await self._request_with_retry("GET", f"/v1/videos/{task_id}")
         data = response.json()
+        metadata = data.get("metadata") or {}
         return VideoQueryResponse(
             id=data.get("id", task_id),
             task_id=data.get("task_id", task_id),
             status=VideoStatus(data.get("status", "pending")),
-            video_url=data.get("video_url"),
+            video_url=metadata.get("url") or data.get("video_url"),
             video_id=data.get("video_id"),
             progress=data.get("progress", 0),
             error=data.get("error"),
+            created_at=data.get("created_at"),
+            updated_at=data.get("completed_at"),
         )
 
     async def poll_task(self, task_id: str, config: VideoPollConfig | None = None) -> VideoResult:

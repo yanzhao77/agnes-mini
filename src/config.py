@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     api_key: str = ""
 
     # API endpoints
-    base_url: str = "https://api.agnesai.com"
+    base_url: str = "https://apihub.agnes-ai.com"
 
     # Default model names
     chat_model: str = "agnes-2.0-flash"
@@ -40,7 +40,9 @@ class Settings(BaseSettings):
     video_poll_interval: int = 5
     video_poll_timeout: int = 600
 
-    # Output directory for generated files
+    # SSL verification
+    verify_ssl: bool = True
+    # Output directory
     output_dir: str = "./output"
 
     # Logging level
@@ -60,3 +62,5 @@ def get_settings() -> Settings:
         A cached Settings instance loaded from environment / .env file.
     """
     return Settings()
+    # SSL verification
+    verify_ssl: bool = True

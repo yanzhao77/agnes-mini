@@ -44,6 +44,7 @@ class BaseProvider:
             self._client = httpx.AsyncClient(
                 base_url=self.settings.base_url,
                 timeout=httpx.Timeout(self.settings.timeout),
+                verify=self.settings.verify_ssl,
                 headers=self._build_headers(),
             )
         return self._client

@@ -18,17 +18,17 @@ from src.providers.video import VideoProvider
 
 
 def test_create_provider_mock_chat():
-    p = create_provider("chat", Settings())
+    p = create_provider("chat", Settings(api_key=""))
     assert isinstance(p, MockChatProvider)
 
 
 def test_create_provider_mock_image():
-    p = create_provider("image", Settings())
+    p = create_provider("image", Settings(api_key=""))
     assert isinstance(p, MockImageProvider)
 
 
 def test_create_provider_mock_video():
-    p = create_provider("video", Settings())
+    p = create_provider("video", Settings(api_key=""))
     assert isinstance(p, MockVideoProvider)
 
 

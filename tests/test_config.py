@@ -8,7 +8,7 @@ from src.config import Settings, get_settings
 def test_settings_defaults():
     """Settings should have sensible defaults."""
     settings = Settings()
-    assert settings.base_url == "https://api.agnesai.com"
+    assert settings.base_url == "https://apihub.agnes-ai.com"
     assert settings.chat_model == "agnes-2.0-flash"
     assert settings.image_model == "agnes-image-2.1-flash"
     assert settings.video_model == "agnes-video-v2.0"
@@ -22,7 +22,7 @@ def test_settings_defaults():
 
 def test_settings_empty_api_key_is_mock_mode():
     """Empty api_key should result in mock mode."""
-    settings = Settings()
+    settings = Settings(api_key="")
     assert settings.api_key == ""
     assert settings.is_mock_mode is True
 
