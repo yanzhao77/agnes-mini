@@ -31,6 +31,8 @@ from src.models.image import (
     ImageToImageRequest,
     MultiImageCompositionRequest,
 )
+from src.models.character import Character, CharacterBank, CharacterExpression, CharacterView
+from src.models.scene import Scene, SceneBank, SceneVariant
 from src.models.script import Script, Shot
 from src.models.video import (
     VideoPollConfig,
@@ -71,6 +73,13 @@ __all__ = [
     "VideoResult",
     "VideoStatus",
     "Script",
+    "Character",
+    "CharacterBank",
+    "CharacterExpression",
+    "CharacterView",
+    "Scene",
+    "SceneBank",
+    "SceneVariant",
     "Shot",
     "VideoTaskResponse",
 ]

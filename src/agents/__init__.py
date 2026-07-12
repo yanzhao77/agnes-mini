@@ -1,5 +1,6 @@
 """Agent layer for Agnes Mini."""
 from src.agents.base import BaseAgent
+from src.agents.script_analysis_agent import ScriptAnalysisAgent, ScriptAnalysisResult
 from src.agents.image_agent import ImageAgent
 from src.agents.orchestrator import AgentResult, OrchestratorAgent
 from src.agents.text_agent import TextAgent
@@ -9,6 +10,8 @@ from src.agents.video_agent import VideoAgent
 __all__ = [
     "AgentResult",
     "BaseAgent",
+    "ScriptAnalysisAgent",
+    "ScriptAnalysisResult",
     "ImageAgent",
     "OrchestratorAgent",
     "TextAgent",
