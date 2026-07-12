@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agnes-mini"
-version = "1.0.0"
+version = "2.0.0"
 description = "Agnes Mini - Lightweight Python SDK for Agnes AI API"
 readme = "README.md"
 license = { text = "MIT" }
